@@ -1,18 +1,20 @@
-#__2d 게임 만들기__
+# __2d 게임 만들기__
 
-##1. 플래피 버드(FLAPPY BIRD)
+## 1. 플래피 버드(FLAPPY BIRD)
 ![Flappy Bird](https://user-images.githubusercontent.com/68374446/94271138-2a5d3300-ff7c-11ea-848a-2d61f551a930.jpg)
+
+
   2014년에 스마트폰 초기 당시 히트를 친 간단한 모바일 게임
 
   게임의 방식은 터치를 통해 떨어지는 물고기를 관 사이로 통과시키는 것이다.
   최대한 관에 부딪치지 말고 고득점을 하는 것이 게임의 목적이다.
 
-##1. GameState (Scene) 의 수 및 각각의 이름
+## 1. GameState (Scene) 의 수 및 각각의 이름
 
   일단 Game 시작 화면, 인게임 state, 게임 오버 state 3개를 계획중
   추후 flappy bird를 기반으로 다른 scene을 추가 예정
   
-##1. 각 GameState 별 다음 항목
+## 1. 각 GameState 별 다음 항목
 
 ### - 첫 시작화면 GameState
     아무 키나 눌렀을 때 게임이 시작하도록 설계할 예정
@@ -32,7 +34,7 @@
     Escape키를 누를시 첫 시작화면 GameState로 이동
     마우스 클릭 혹은 space bar 입력시 게임 다시 시작
 
-##1. 필요한 기술
+## 1. 필요한 기술
 
   내가 지정한 객체가 움직일 때 그 객체가 중심이 되어 화면(스크롤)이
   자연스럽게 움직이는 기술 
