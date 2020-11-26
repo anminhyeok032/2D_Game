@@ -21,6 +21,9 @@ class Player:
         self.move = 0
         self.jump_speed = 0
 
+        self.hx = 27*2
+        self.hy = 20*2
+
         self.state = Player.FALLING
         self.FPS = 10
         self.mag = 1
@@ -75,6 +78,7 @@ class Player:
         self.image.clip_draw(self.frame * (27*2), 0, 27*2, 20*2, *self.pos)
 
 
+
     def jump(self):
         if self.state in [Player.JUMPING, Player.BASIC, Player.DASH]:
             return
@@ -82,6 +86,13 @@ class Player:
             self.state = Player.JUMPING
 
         self.jump_speed = Player.JUMP * self.mag
+
+
+    def get_bb(self):
+        hw = self.hx
+        hh = self.hy
+        x, y = self.pos
+        return x - hw / 2, y - hh / 2, x + hw / 2, y + hh / 2
 
     def handle_event(self, e):
         global delta_x, delta_y

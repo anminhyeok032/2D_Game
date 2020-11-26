@@ -1,6 +1,6 @@
 from pico2d import *
 import gfw
-from pipe import Pipe
+from pipe import Pipe_up, Pipe_down
 import random
 
 TIME = 0
@@ -16,7 +16,12 @@ def generate_pipe():
     hh = random.randint(-100, 100)
 
     global pipe
-    pipe = Pipe(10, hh)
+    pipe = Pipe_up(10, hh)
     pipe.pipe = pipe
     gfw.world.add(gfw.layer.pipe, pipe)
+
+    global pipe1
+    pipe1 = Pipe_down(10, hh)
+    pipe1.pipe = pipe1
+    gfw.world.add(gfw.layer.pipe, pipe1)
 

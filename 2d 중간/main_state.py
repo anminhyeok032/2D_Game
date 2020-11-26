@@ -2,7 +2,7 @@ from pico2d import *
 import gobj
 from player import Player
 
-from pipe import Pipe
+
 from bg import HorzScrollBackground
 import random
 import gfw
@@ -36,16 +36,37 @@ def exit():
     pass
 
 
+def check_enemy(e):
+    if gobj.collides_box(player, e):
+        print('Player Collision', e)
+        e.remove()
+        return
+
+    # for b in gfw.gfw.world.objects_at(gfw.layer.bullet):
+    #     if gobj.collides_box(b, e):
+    #         # print('Collision', e, b)
+    #         dead = e.decrease_life(b.power)
+    #         if dead:
+    #             score.score += e.level * 10
+    #             e.remove()
+    #         b.remove()
+    #         return
+
+
+
 def update():
     global score
     score += gfw.delta_time
     gfw.world.update()
     generator.update(score)
 
+    for e in gfw.world.objects_at(gfw.layer.pipe):
+        check_enemy(e)
+
 
 def draw():
     gfw.world.draw()
-    # gobj.draw_collision_box()
+    gobj.draw_collision_box()
 
 
 def handle_event(e):
