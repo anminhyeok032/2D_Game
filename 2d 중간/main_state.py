@@ -1,58 +1,51 @@
 from pico2d import *
 import gobj
 from player import Player
-from pipe_upper import Pipe_high
-from pipe_low import Pipe_low
+
+from pipe import Pipe
 from bg import HorzScrollBackground
 import random
 import gfw
+import generator
 
 
 def enter():
     gfw.world.init(['bg', 'pipe', 'enemy', 'item', 'player'])
 
-
     bg = HorzScrollBackground('background.png')
     bg.speed = 10
     gfw.world.add(gfw.layer.bg, bg)
 
-
-
+    global score
+    score = 0
 
     global player
     player = Player()
     player.bg = bg
     gfw.world.add(gfw.layer.player, player)
 
-
-    hh = random.randint(-50, 50)
-
-    global pipe
-
-    h = get_canvas_height() // 2 + hh
-    pipe = Pipe_high(10, h + 200)
-    pipe.pipe = pipe
-    gfw.world.add(gfw.layer.pipe, pipe)
-
-    global pipe2
-    pipe2 = Pipe_low(10, h - 200)
-    pipe2.pipe = pipe2
-    gfw.world.add(gfw.layer.pipe, pipe2)
+    # hh = random.randint(-100, 100)
+    #
+    # global pipe
+    # pipe = Pipe(10, hh)
+    # pipe.pipe = pipe
+    # gfw.world.add(gfw.layer.pipe, pipe)
 
 
 def exit():
     pass
 
+
 def update():
+    global score
+    score += gfw.delta_time
     gfw.world.update()
-
-
-
+    generator.update(score)
 
 
 def draw():
     gfw.world.draw()
-    gobj.draw_collision_box()
+    # gobj.draw_collision_box()
 
 
 def handle_event(e):
@@ -65,6 +58,7 @@ def handle_event(e):
             pass
 
     player.handle_event(e)
+
 
 if __name__ == '__main__':
     gfw.run_main()
