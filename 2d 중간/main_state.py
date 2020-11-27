@@ -2,9 +2,7 @@ from pico2d import *
 import gobj
 from player import Player
 
-
 from bg import HorzScrollBackground
-import random
 import gfw
 import generator
 
@@ -16,6 +14,9 @@ def enter():
     bg.speed = 10
     gfw.world.add(gfw.layer.bg, bg)
 
+    global font
+    font = gfw.font.load('res/ConsolaMalgun.ttf', 40)
+
     global score
     score = 0
 
@@ -24,21 +25,14 @@ def enter():
     player.bg = bg
     gfw.world.add(gfw.layer.player, player)
 
-    # hh = random.randint(-100, 100)
-    #
-    # global pipe
-    # pipe = Pipe(10, hh)
-    # pipe.pipe = pipe
-    # gfw.world.add(gfw.layer.pipe, pipe)
-
 
 def exit():
     pass
 
 
+
 def check_enemy(e):
     if gobj.collides_box(player, e):
-        print('Player Collision', e)
         e.remove()
         return
 
@@ -66,7 +60,11 @@ def update():
 
 def draw():
     gfw.world.draw()
+    score_pos = 30, get_canvas_height() - 30
+
+    font.draw(*score_pos, 'Score: %d' % score, (255, 255, 255))
     gobj.draw_collision_box()
+
 
 
 def handle_event(e):

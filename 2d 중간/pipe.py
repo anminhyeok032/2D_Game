@@ -36,7 +36,7 @@ class Pipe_down:
         x, y = self.pos
         x -= 2
         self.pos = x, y
-        if x < get_canvas_width() - 100:
+        if x < - 100:
             self.remove()
 
     def get_bb(self):
@@ -46,7 +46,7 @@ class Pipe_down:
         return x - hw / 2, y - hh / 2, x + hw / 2, y + hh / 2
 
     def remove(self):
-        pass
+        gfw.world.remove(self)
 
 
 class Pipe_up:
@@ -81,7 +81,7 @@ class Pipe_up:
         x, y = self.pos
         x -= 2
         self.pos = x, y
-        if x < get_canvas_width() - 100:
+        if x < - 100:
             self.remove()
 
     def get_bb(self):
@@ -92,4 +92,4 @@ class Pipe_up:
         return x - hw / 2, y - hh / 2, x + hw / 2, y + hh / 2
 
     def remove(self):
-        pass
+        gfw.world.remove(self)
