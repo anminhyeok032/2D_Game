@@ -92,7 +92,7 @@ class Player:
         hw = self.hx
         hh = self.hy
         x, y = self.pos
-        return x - hw / 2, y - hh / 2, x + hw / 2, y + hh / 2
+        return x - hw / 2 + 8, y - hh / 2 + 8, x + hw / 2 - 8, y + hh / 2 - 8
 
     def handle_event(self, e):
         global delta_x, delta_y

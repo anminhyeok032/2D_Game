@@ -43,7 +43,7 @@ class Pipe_down:
         hw = self.hx
         hh = self.hy
         x, y = self.pos
-        return x - hw / 2, y - hh / 2, x + hw / 2, y + hh / 2
+        return x - hw / 2 + 4, y - hh / 2 + 4, x + hw / 2 - 4, y + hh / 2 - 4
 
     def remove(self):
         gfw.world.remove(self)
@@ -89,7 +89,7 @@ class Pipe_up:
         hw = self.hx
         hh = self.hy
         x, y = self.pos
-        return x - hw / 2, y - hh / 2, x + hw / 2, y + hh / 2
+        return x - hw / 2 + 4, y - hh / 2 + 4, x + hw / 2 - 4, y + hh / 2 - 4
 
     def remove(self):
         gfw.world.remove(self)
