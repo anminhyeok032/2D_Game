@@ -8,7 +8,7 @@ import generator
 
 
 def enter():
-    gfw.world.init(['bg', 'pipe', 'enemy', 'item', 'player'])
+    gfw.world.init(['bg', 'shell', 'pipe', 'enemy', 'item', 'player'])
 
     bg = HorzScrollBackground('background.png')
     bg.speed = 10
@@ -55,6 +55,9 @@ def update():
     generator.update(score)
 
     for e in gfw.world.objects_at(gfw.layer.pipe):
+        check_enemy(e)
+
+    for e in gfw.world.objects_at(gfw.layer.shell):
         check_enemy(e)
 
 
