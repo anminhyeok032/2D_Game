@@ -49,7 +49,7 @@ class Pipe_down:
         gfw.world.remove(self)
 
 
-class Pipe_up:
+class Pipe_up(Pipe_down):
     #SIZE = 167
 
     def __init__(self, speed, pipe_y):
@@ -74,22 +74,9 @@ class Pipe_up:
         self.image.composite_draw(3.14159, 'h', *self.pos, SIZE, SIZE*7.5)
         #self.image.clip_draw(0, 0, 72, 786, *self.pos, SIZE, SIZE*7.5)
 
-
-
-
-    def update(self):
-        x, y = self.pos
-        x -= 2
-        self.pos = x, y
-        if x < - 100:
-            self.remove()
-
     def get_bb(self):
         global upper_pos
         hw = self.hx
         hh = self.hy
         x, y = self.pos
         return x - hw / 2 + 4, y - hh / 2 + 4, x + hw / 2 - 4, y + hh / 2 - 4
-
-    def remove(self):
-        gfw.world.remove(self)
