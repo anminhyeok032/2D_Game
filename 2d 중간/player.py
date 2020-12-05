@@ -4,7 +4,11 @@ import gobj
 
 PLAYER_SIZE = 27
 MOVE_PPS = 300
+MAX_LIFE = 5
+
 class Player:
+
+    KEYDOWN_SPACE = (SDL_KEYDOWN, SDLK_SPACE)
 
     JUMPING, FALLING, BASIC, DASH = range(4)
     GRAVITY = 3000
@@ -24,12 +28,19 @@ class Player:
         self.hx = 27*2
         self.hy = 20*2
 
+        global life
+        life = MAX_LIFE
+
         self.state = Player.FALLING
         self.FPS = 10
         self.mag = 1
         self.mag_speed = 0
         global delta_x, delta_y
         delta_x, delta_y = 0, 0
+
+        global heart_red, heart_white
+        heart_red = gfw.image.load('res/heart_red.png')
+        heart_white = gfw.image.load('res/heart_white.png')
 
         # if Bird.image == None:
 
@@ -40,6 +51,9 @@ class Player:
     def state(self, state):
         self.__state = state
 
+    def get_life(self):
+        global life
+        return life
 
     def update(self):
         global fn
@@ -68,6 +82,16 @@ class Player:
 
 
 
+    def increase_life(self):
+        global life
+
+
+    def decrease_life(self):
+        global life
+        life -= 1
+        return life <= 0
+
+
 
     def move(self, diff):
         self.pos = gobj.point_add(self.pos, diff)
@@ -76,6 +100,12 @@ class Player:
     def draw(self):
 
         self.image.clip_draw(self.frame * (27*2), 0, 27*2, 20*2, *self.pos)
+
+        x, y = get_canvas_width() - 30, get_canvas_height() - 30
+        for i in range(MAX_LIFE):
+            heart = heart_red if i < life else heart_white
+            heart.draw(x, y)
+            x -= heart.w
 
 
 
@@ -97,23 +127,23 @@ class Player:
     def handle_event(self, e):
         global delta_x, delta_y
         if e.type == SDL_KEYDOWN:
-            if e.key == SDLK_LEFT:
+            if e.key == SDLK_a:
                 delta_x -= 1
-            elif e.key == SDLK_RIGHT:
+            elif e.key == SDLK_d:
                 delta_x += 1
-            elif e.key == SDLK_DOWN:
+            elif e.key == SDLK_s:
                 delta_y -= 1
-            elif e.key == SDLK_UP:
+            elif e.key == SDLK_w:
                 delta_y += 1
 
 
 
         elif e.type == SDL_KEYUP:
-            if e.key == SDLK_LEFT:
+            if e.key == SDLK_a:
                 delta_x += 1
-            elif e.key == SDLK_RIGHT:
+            elif e.key == SDLK_d:
                 delta_x -= 1
-            elif e.key == SDLK_DOWN:
+            elif e.key == SDLK_s:
                 delta_y += 1
-            elif e.key == SDLK_UP:
+            elif e.key == SDLK_w:
                 delta_y -= 1

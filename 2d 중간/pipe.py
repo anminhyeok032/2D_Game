@@ -4,9 +4,10 @@ from gobj import *
 import random
 
 SIZE = 70
-HOLE_SIZE = 350
+HOLE_SIZE = 300
 class Pipe_down:
     #SIZE = 167
+    global HOLE_SIZE
 
     def __init__(self, speed, pipe_y):
         #self.x, self.y = get_canvas_width(), (get_canvas_height() // 2 - HOLE_SIZE) #+ pipe_y

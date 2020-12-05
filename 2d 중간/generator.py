@@ -31,7 +31,11 @@ def generate_pipe():
 def generate_shell():
     turtle = random.choice([True, False])
     global shell
-    shell = Shell_green(2) if turtle else Shell_red(2)
-    shell.shell = shell
-    gfw.world.add(gfw.layer.shell, shell)
-
+    if turtle:
+        shell = Shell_green(2)
+        shell.shell = shell
+        gfw.world.add(gfw.layer.shell_green, shell)
+    else:
+        shell = Shell_red(2)
+        shell.shell = shell
+        gfw.world.add(gfw.layer.shell_red, shell)

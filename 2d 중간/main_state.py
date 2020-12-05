@@ -1,22 +1,25 @@
 from pico2d import *
 import gobj
 from player import Player
-
+#from boss import Boss
+from collision import *
 from bg import HorzScrollBackground
 import gfw
 import generator
 
 
 def enter():
-    gfw.world.init(['bg', 'shell', 'pipe', 'enemy', 'item', 'player'])
+    gfw.world.init(['bg', 'shell_green', 'shell_red', 'pipe', 'enemy', 'item', 'boss', 'player'])
 
     bg = HorzScrollBackground('background.png')
     bg.speed = 10
     gfw.world.add(gfw.layer.bg, bg)
 
     global font
-    font = gfw.font.load('res/ConsolaMalgun.ttf', 40)
+    font = gfw.font.load('res/FlappyBird.ttf', 40)
 
+    global time
+    time = 0
     global score
     score = 0
 
@@ -24,6 +27,11 @@ def enter():
     player = Player()
     player.bg = bg
     gfw.world.add(gfw.layer.player, player)
+
+    #global boss
+    #boss = Boss()
+    #boss.bg = bg
+    #gfw.world.add(gfw.layer.boss, boss)
 
 
 def exit():
@@ -34,7 +42,9 @@ def exit():
 def check_enemy(e):
     if gobj.collides_box(player, e):
         e.remove()
-        return
+        return True
+
+    return False
 
     # for b in gfw.gfw.world.objects_at(gfw.layer.bullet):
     #     if gobj.collides_box(b, e):
@@ -48,25 +58,45 @@ def check_enemy(e):
 
 
 
+
+
+
+
 def update():
-    global score
-    score += gfw.delta_time
+    global time, score
+    time += gfw.delta_time
     gfw.world.update()
-    generator.update(score)
+    generator.update(time)
+
+
+    hit, hits, dead, item = False, False, False, None
+    for e in gfw.world.objects_at(gfw.layer.shell_green):
+        hit = check_enemy(e)
+        if hit:
+            dead = player.decrease_life()
 
     for e in gfw.world.objects_at(gfw.layer.pipe):
-        check_enemy(e)
+        hits = check_enemy(e)
+        if hits:
+            dead = player.decrease_life()
 
-    for e in gfw.world.objects_at(gfw.layer.shell):
-        check_enemy(e)
+    for e in gfw.world.objects_at(gfw.layer.shell_red):
+        item = check_enemy(e)
+        if item:
+            player.increase_life()
+            score += 1
 
+
+    ends = dead
+    if ends:
+        print('end')
 
 def draw():
     gfw.world.draw()
-    score_pos = 30, get_canvas_height() - 30
+    score_pos = get_canvas_width() // 2, get_canvas_height() - 60
 
-    font.draw(*score_pos, 'Score: %d' % score, (255, 255, 255))
-    gobj.draw_collision_box()
+    font.draw(*score_pos, '%d' % score, (255, 255, 255))
+    #gobj.draw_collision_box()
 
 
 

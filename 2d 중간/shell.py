@@ -24,8 +24,6 @@ class Shell_green:
         self.image.clip_draw(self.frame * 48, 0, 48, 30, *self.pos)
 
 
-
-
     def update(self):
         global fn
         fn += 1
