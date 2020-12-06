@@ -15,15 +15,16 @@ class Player:
     JUMP = 1000
     global fn
     fn = 0
+
     def __init__(self):
-        self.delta = 0, 0
+
         self.pos = get_canvas_width() // 2 , get_canvas_height() // 2
         Player.image = gfw.image.load('res/bird_fly.png')
         self.target = None
         self.frame = 0
         self.time = 0
         self.move = 0
-        self.jump_speed = 0
+
 
         self.hx = 27*2
         self.hy = 20*2
@@ -35,8 +36,10 @@ class Player:
         self.FPS = 10
         self.mag = 1
         self.mag_speed = 0
-        global delta_x, delta_y
-        delta_x, delta_y = 0, 0
+        self.delta_x, self.delta_y = 0, 0
+        #delta_x, delta_y = 0, 0
+
+
 
         global heart_red, heart_white
         heart_red = gfw.image.load('res/heart_red.png')
@@ -51,19 +54,27 @@ class Player:
     def state(self, state):
         self.__state = state
 
-    def get_life(self):
+
+    def reset(self):
+
+        self.pos = get_canvas_width() // 2, get_canvas_height() // 2
+
+
+        global angle
+        angle = 0
+
         global life
-        return life
+        life = MAX_LIFE
 
     def update(self):
         global fn
         fn += 1
         self.frame = ((self.frame + fn) // 10) % 3
 
-        global delta_x, delta_y
+        # global delta_x, delta_y
         x, y = self.pos
-        x += delta_x * MOVE_PPS * gfw.delta_time
-        y += delta_y * MOVE_PPS * gfw.delta_time
+        x += self.delta_x * MOVE_PPS * gfw.delta_time
+        y += self.delta_y * MOVE_PPS * gfw.delta_time
         global gravity
         gravity = 2
         # y -= gravity
@@ -80,7 +91,8 @@ class Player:
         y = clamp(hh, y, get_canvas_height() - hh)
         self.pos = x, y
 
-
+    def get_pos(self):
+        return self.pos
 
     def increase_life(self):
         global life
@@ -109,13 +121,7 @@ class Player:
 
 
 
-    def jump(self):
-        if self.state in [Player.JUMPING, Player.BASIC, Player.DASH]:
-            return
-        if self.state == Player.FALLING:
-            self.state = Player.JUMPING
 
-        self.jump_speed = Player.JUMP * self.mag
 
 
     def get_bb(self):
@@ -125,25 +131,191 @@ class Player:
         return x - hw / 2 + 8, y - hh / 2 + 8, x + hw / 2 - 8, y + hh / 2 - 8
 
     def handle_event(self, e):
-        global delta_x, delta_y
+        #global delta_x, delta_y
         if e.type == SDL_KEYDOWN:
             if e.key == SDLK_a:
-                delta_x -= 1
+                self.delta_x -= 1
             elif e.key == SDLK_d:
-                delta_x += 1
+                self.delta_x += 1
             elif e.key == SDLK_s:
-                delta_y -= 1
+                self.delta_y -= 1
             elif e.key == SDLK_w:
-                delta_y += 1
+                self.delta_y += 1
 
 
 
         elif e.type == SDL_KEYUP:
             if e.key == SDLK_a:
-                delta_x += 1
+                self.delta_x += 1
             elif e.key == SDLK_d:
-                delta_x -= 1
+                self.delta_x -= 1
             elif e.key == SDLK_s:
-                delta_y += 1
+                self.delta_y += 1
             elif e.key == SDLK_w:
-                delta_y -= 1
+                self.delta_y -= 1
+
+    def remove(self):
+        gfw.world.remove(self)
+
+
+class boss_mode_player(Player):
+
+    def __init__(self):
+        global mouse_click
+        mouse_click = False
+        self.pos = get_canvas_width() // 2 , get_canvas_height() // 2
+        Player.image = gfw.image.load('res/bird_fly.png')
+        self.target = None
+        self.frame = 0
+        self.time = 0
+        self.move = 0
+
+
+        self.hx = 27*2
+        self.hy = 20*2
+
+        global life
+        life = MAX_LIFE
+
+        self.state = Player.FALLING
+        self.FPS = 10
+        self.mag = 1
+        self.mag_speed = 0
+
+        global heart_red, heart_white
+        heart_red = gfw.image.load('res/heart_red.png')
+        heart_white = gfw.image.load('res/heart_white.png')
+        self.target_x, self.target_y = get_canvas_width() // 2, get_canvas_height() // 2
+
+        self.delta_x, self.delta_y = 0, 0
+
+        global pipe
+        pipe = gfw.image.load('res/pipe_low.png')
+        #delta_x, delta_y = 0, 0
+
+    def draw(self):
+
+        global angle, mouse_click, pipe_size
+        pipe_size = 20
+        x, y = self.pos
+        dx, dy = self.target_x - x, self.target_y - y
+        angle = math.atan2(dy, dx) - math.pi / 2
+        if mouse_click:
+            pipe.composite_draw(angle, 'h', *self.pos, pipe_size, pipe_size*7.5)
+
+
+        if angle > 0 or angle < -3.1:
+            self.image.clip_composite_draw(self.frame * (27 * 2), 0, 27 * 2, 20 * 2, angle + 1.5708, 'v', *self.pos, 27*2, 20*2)
+        else:
+            self.image.clip_composite_draw(self.frame * (27 * 2), 0, 27 * 2, 20 * 2, angle + 1.5708, '', *self.pos,
+                                           27 * 2, 20 * 2)
+
+
+        x, y = get_canvas_width() - 30, get_canvas_height() - 30
+        for i in range(MAX_LIFE):
+            heart = heart_red if i < life else heart_white
+            heart.draw(x, y)
+            x -= heart.w
+
+
+    def update(self):
+        global fn
+        fn += 1
+        self.frame = ((self.frame + fn) // 10) % 3
+
+        self.follow_mouse_target()
+
+        x, y = self.pos
+        x += self.delta_x * MOVE_PPS * gfw.delta_time
+        y += self.delta_y * MOVE_PPS * gfw.delta_time
+        global gravity
+        gravity = 2
+        # y -= gravity
+        # print(y)
+
+        self.time += gfw.delta_time
+        if self.state != Player.FALLING:
+            # print('jump speed:', self.jump_speed)
+            self.move((0, self.jump_speed * gfw.delta_time))
+            self.jump_speed -= Player.GRAVITY * gfw.delta_time
+
+        hw, hh = self.image.w // 2, self.image.h // 2
+        x = clamp(hw, x, get_canvas_width() - hw)
+        y = clamp(hh, y, get_canvas_height() - hh)
+        self.pos = x, y
+
+
+
+    def get_bb(self):
+        hw = self.hx
+        hh = self.hy
+        x, y = self.pos
+        return x - hh / 2 + 10, y - hh / 2 + 10, x + hh / 2 - 10, y + hh / 2 - 10
+
+    def follow_mouse_target(self):
+        global angle
+
+        x, y = self.pos
+        dx, dy = self.target_x - x, self.target_y - y
+        distance = math.sqrt(dx ** 2 + dy ** 2)
+        if distance == 0:
+            return
+        dx, dy = dx / distance, dy / distance
+        x += dx * MOVE_PPS * gfw.delta_time
+        y += dy * MOVE_PPS * gfw.delta_time
+        if dx > 0 and x > self.target_x: x = self.target_x
+        if dx < 0 and x < self.target_x: x = self.target_x
+        if dy > 0 and y > self.target_y: y = self.target_y
+        if dy < 0 and y < self.target_y: y = self.target_y
+        #self.pos = x, y
+
+        angle = math.atan2(dy, dx) - math.pi / 2
+        #print('Angle: %.3f' % angle)
+
+
+    def teleport_pipe(self):
+        pass
+
+    def teleport(self):
+        self.pos = self.target_x, self.target_y
+
+    def handle_event(self, e):
+        #global delta_x, delta_y
+        global mouse_click
+        if e.type == SDL_MOUSEBUTTONDOWN:
+            mouse_click = True
+            self.set_target(e)
+
+        elif e.type == SDL_MOUSEMOTION:
+            self.set_target(e)
+
+        if e.type == SDL_MOUSEBUTTONUP:
+            mouse_click = False
+            self.set_target(e)
+            self.teleport()
+
+
+        if e.type == SDL_KEYDOWN:
+
+            if e.key == SDLK_a:
+                self.delta_x -= 1
+            elif e.key == SDLK_d:
+                self.delta_x += 1
+            elif e.key == SDLK_s:
+                self.delta_y -= 1
+            elif e.key == SDLK_w:
+                self.delta_y += 1
+
+        elif e.type == SDL_KEYUP:
+            if e.key == SDLK_a:
+                self.delta_x += 1
+            elif e.key == SDLK_d:
+                self.delta_x -= 1
+            elif e.key == SDLK_s:
+                self.delta_y += 1
+            elif e.key == SDLK_w:
+                self.delta_y -= 1
+
+    def set_target(self, e):
+        #global target_x, target_y
+        self.target_x, self.target_y = e.x, get_canvas_height() - e.y - 1

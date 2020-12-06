@@ -192,3 +192,5 @@ class HorzScrollBackground:
     #     }
     #     canvas.restore();
     # }
+    def remove(self):
+        gfw.world.remove(self)

@@ -1,16 +1,21 @@
 from pico2d import *
 import gobj
-from player import Player
-#from boss import Boss
+from player import Player, boss_mode_player
+from boss import Boss
 from collision import *
 from bg import HorzScrollBackground
 import gfw
 import generator
 
+STATE_IN_GAME, STATE_BOSS = range(2)
 
 def enter():
+    global state, boss_bool
+    state = STATE_IN_GAME
+    boss_bool = False
     gfw.world.init(['bg', 'shell_green', 'shell_red', 'pipe', 'enemy', 'item', 'boss', 'player'])
 
+    global bg
     bg = HorzScrollBackground('background.png')
     bg.speed = 10
     gfw.world.add(gfw.layer.bg, bg)
@@ -21,17 +26,27 @@ def enter():
     global time
     time = 0
     global score
-    score = 0
+    score = 10
 
-    global player
+
+    global player,boss
+
     player = Player()
-    player.bg = bg
+    #player.bg = bg
     gfw.world.add(gfw.layer.player, player)
 
-    #global boss
-    #boss = Boss()
-    #boss.bg = bg
-    #gfw.world.add(gfw.layer.boss, boss)
+
+    # player = boss_mode_player()
+    # player.bg = bg
+    # gfw.world.add(gfw.layer.player, player)
+    #
+    # boss = Boss(player.pos)
+    # boss.bg = bg
+    # gfw.world.add(gfw.layer.boss, boss)
+
+
+
+
 
 
 def exit():
@@ -63,11 +78,14 @@ def check_enemy(e):
 
 
 def update():
-    global time, score
+    global time, score, state, boss_bool
     time += gfw.delta_time
     gfw.world.update()
-    generator.update(time)
+    if state == STATE_IN_GAME:
+        generator.update(time)
 
+    global boss
+    boss = Boss(*player.pos)
 
     hit, hits, dead, item = False, False, False, None
     for e in gfw.world.objects_at(gfw.layer.shell_green):
@@ -86,7 +104,9 @@ def update():
             player.increase_life()
             score += 1
 
-
+    if score > 9 and boss_bool == False:
+        boss_bool = True
+        boss_round()
     ends = dead
     if ends:
         print('end')
@@ -96,7 +116,30 @@ def draw():
     score_pos = get_canvas_width() // 2, get_canvas_height() - 60
 
     font.draw(*score_pos, '%d' % score, (255, 255, 255))
-    #gobj.draw_collision_box()
+    gobj.draw_collision_box()
+
+
+def boss_round():
+
+    global player, boss, state, bg
+    bg.remove()
+    player.remove()
+    for e in gfw.world.objects_at(gfw.layer.shell_green):
+        e.remove()
+    for e in gfw.world.objects_at(gfw.layer.pipe):
+        e.remove()
+    for e in gfw.world.objects_at(gfw.layer.shell_red):
+        e.remove()
+
+
+    state = STATE_BOSS
+
+    #bg = load_image
+    player = boss_mode_player()
+    gfw.world.add(gfw.layer.player, player)
+
+
+    gfw.world.add(gfw.layer.boss, boss)
 
 
 
