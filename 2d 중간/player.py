@@ -39,7 +39,8 @@ class Player:
         self.delta_x, self.delta_y = 0, 0
         #delta_x, delta_y = 0, 0
 
-        global decrease, rt
+        global decrease, rt, op
+        op = 1
         decrease = False
         rt = 0
         global heart_red, heart_white
@@ -95,15 +96,16 @@ class Player:
         y = clamp(self.hy / 2, y, get_canvas_height() - self.hx / 2)
         self.pos = x, y
 
-        global decrease, time
+        global decrease, time, op
         if decrease:
-            self.image.opacify(100)
+            op = 100
+            self.image.opacify(op)
 
             if time + 1.5 < rt:
-                print(1)
                 decrease = False
         else:
-            self.image.opacify(1)
+            op = 1
+            self.image.opacify(op)
 
 
 
@@ -113,8 +115,9 @@ class Player:
 
 
     def decrease_life(self, real_time):
-        global  decrease, time
-        self.life -= 1
+        global decrease, time
+        if op == 1:
+            self.life -= 1
         time = real_time
         decrease = True
 
@@ -178,11 +181,12 @@ class Player:
 
 
 class boss_mode_player(Player):
+    global time, op
 
     def __init__(self, exlife):
         global mouse_click
         mouse_click = False
-        self.pos = get_canvas_width() // 2 , get_canvas_height() // 2
+        self.pos = get_canvas_width() // 2 , 100
         Player.image = gfw.image.load('res/bird_fly.png')
         self.target = None
         self.frame = 0
@@ -200,6 +204,11 @@ class boss_mode_player(Player):
         self.FPS = 10
         self.mag = 1
         self.mag_speed = 0
+
+        global decrease, rt, op
+        op = 1
+        decrease = False
+        rt = 0
 
         global heart_red, heart_white
         heart_red = gfw.image.load('res/heart_red.png')
@@ -255,9 +264,10 @@ class boss_mode_player(Player):
 
 
     def update(self):
-        global fn
+        global fn, rt
         fn += 1
         self.frame = ((self.frame + fn) // 10) % 3
+        rt += gfw.delta_time
 
         self.follow_mouse_target()
 
@@ -277,16 +287,30 @@ class boss_mode_player(Player):
         y = clamp(self.hy/2, y, get_canvas_height() - self.hx/2)
         self.pos = x, y
 
-        # global decrease, time
-        # if decrease:
-        #     self.image.opacify(100)
-        #
-        #     if time + 1.5 < rt:
-        #         print(1)
-        #         decrease = False
-        # else:
-        #     self.image.opacify(1)
+        global decrease, time, op
+        if decrease:
+            op = 100
+            self.image.opacify(op)
 
+            if time + 1.5 < rt:
+                decrease = False
+        else:
+            op = 1
+            self.image.opacify(op)
+
+
+    def increase_life(self):
+        pass
+
+
+    def decrease_life(self, real_time):
+        global decrease, time
+        if op == 1:
+            self.life -= 1
+        time = real_time
+        decrease = True
+
+        return self.life <= 0
 
 
     def get_bb(self):
@@ -314,6 +338,7 @@ class boss_mode_player(Player):
 
         angle = math.atan2(dy, dx) - math.pi / 2
         #print('Angle: %.3f' % angle)
+
 
 
     def teleport_pipe(self):

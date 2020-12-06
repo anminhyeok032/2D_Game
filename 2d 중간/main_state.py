@@ -26,7 +26,7 @@ def enter():
     global time
     time = 0
     global score
-    score = 9
+    score = 10
 
 
     global player,boss
@@ -55,8 +55,10 @@ def exit():
 
 
 def check_enemy(e):
+    global boss_bool
     if gobj.collides_box(player, e):
-        e.remove()
+        if not boss_bool:
+            e.remove()
         return True
 
     return False
@@ -86,37 +88,53 @@ def update():
 
     global boss
     boss = Boss(*player.pos)
-
     hit, hits, dead, item = False, False, False, None
-    for e in gfw.world.objects_at(gfw.layer.shell_green):
-        hit = check_enemy(e)
-        if hit:
-            dead = player.decrease_life(time)
+    if not boss_bool:
 
-    for e in gfw.world.objects_at(gfw.layer.pipe):
-        hits = check_enemy(e)
-        if hits:
-            dead = player.decrease_life(time)
+        for e in gfw.world.objects_at(gfw.layer.shell_green):
+            hit = check_enemy(e)
+            if hit:
+                dead = player.decrease_life(time)
 
-    for e in gfw.world.objects_at(gfw.layer.shell_red):
-        item = check_enemy(e)
-        if item:
-            player.increase_life()
-            score += 1
+        for e in gfw.world.objects_at(gfw.layer.pipe):
+            hits = check_enemy(e)
+            if hits:
+                dead = player.decrease_life(time)
 
-    if score > 9 and boss_bool == False:
-        boss_bool = True
-        boss_round()
+        for e in gfw.world.objects_at(gfw.layer.shell_red):
+            item = check_enemy(e)
+            if item:
+                player.increase_life()
+                score += 1
+
+        if score > 9 and boss_bool == False:
+            boss_bool = True
+            boss_round()
+
+
+    else:
+        for e in gfw.world.objects_at(gfw.layer.boss):
+            hits = check_enemy(e)
+            if hits:
+                dead = player.decrease_life(time)
     ends = dead
     if ends:
         print('end')
 
 def draw():
+    global boss_bool, bg
+    if boss_bool:
+        bg = gfw.image.load('res/boss_bg.png')
+
+        center = get_canvas_width() // 2, get_canvas_height() * 2 // 3
+        bg.draw(*center, get_canvas_width(), get_canvas_height() + 200)
     gfw.world.draw()
     score_pos = get_canvas_width() // 2, get_canvas_height() - 60
 
     font.draw(*score_pos, '%d' % score, (255, 255, 255))
     gobj.draw_collision_box()
+
+        #gfw.world.add(gfw.layer.bg, bg)
 
 
 def boss_round():
@@ -134,7 +152,7 @@ def boss_round():
 
     state = STATE_BOSS
 
-    #bg = load_image
+
     player = boss_mode_player(exlife)
     gfw.world.add(gfw.layer.player, player)
 
