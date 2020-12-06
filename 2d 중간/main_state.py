@@ -26,7 +26,7 @@ def enter():
     global time
     time = 0
     global score
-    score = 10
+    score = 9
 
 
     global player,boss
@@ -91,12 +91,12 @@ def update():
     for e in gfw.world.objects_at(gfw.layer.shell_green):
         hit = check_enemy(e)
         if hit:
-            dead = player.decrease_life()
+            dead = player.decrease_life(time)
 
     for e in gfw.world.objects_at(gfw.layer.pipe):
         hits = check_enemy(e)
         if hits:
-            dead = player.decrease_life()
+            dead = player.decrease_life(time)
 
     for e in gfw.world.objects_at(gfw.layer.shell_red):
         item = check_enemy(e)
@@ -123,7 +123,7 @@ def boss_round():
 
     global player, boss, state, bg
     bg.remove()
-    player.remove()
+    exlife = player.remove()
     for e in gfw.world.objects_at(gfw.layer.shell_green):
         e.remove()
     for e in gfw.world.objects_at(gfw.layer.pipe):
@@ -135,7 +135,7 @@ def boss_round():
     state = STATE_BOSS
 
     #bg = load_image
-    player = boss_mode_player()
+    player = boss_mode_player(exlife)
     gfw.world.add(gfw.layer.player, player)
 
 

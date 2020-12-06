@@ -13,7 +13,7 @@ class Player:
     JUMPING, FALLING, BASIC, DASH = range(4)
     GRAVITY = 3000
     JUMP = 1000
-    global fn
+    global fn, op, time
     fn = 0
 
     def __init__(self):
@@ -29,8 +29,8 @@ class Player:
         self.hx = 27*2
         self.hy = 20*2
 
-        global life
-        life = MAX_LIFE
+
+        self.life = MAX_LIFE
 
         self.state = Player.FALLING
         self.FPS = 10
@@ -39,8 +39,9 @@ class Player:
         self.delta_x, self.delta_y = 0, 0
         #delta_x, delta_y = 0, 0
 
-
-
+        global decrease, rt
+        decrease = False
+        rt = 0
         global heart_red, heart_white
         heart_red = gfw.image.load('res/heart_red.png')
         heart_white = gfw.image.load('res/heart_white.png')
@@ -63,13 +64,16 @@ class Player:
         global angle
         angle = 0
 
-        global life
-        life = MAX_LIFE
+
+        self.life = MAX_LIFE
 
     def update(self):
-        global fn
+
+        global fn, rt
         fn += 1
         self.frame = ((self.frame + fn) // 10) % 3
+
+        rt += gfw.delta_time
 
         # global delta_x, delta_y
         x, y = self.pos
@@ -86,22 +90,35 @@ class Player:
             self.move((0, self.jump_speed * gfw.delta_time))
             self.jump_speed -= Player.GRAVITY * gfw.delta_time
 
-        hw, hh = self.image.w // 2, self.image.h // 2
-        x = clamp(hw, x, get_canvas_width() - hw)
-        y = clamp(hh, y, get_canvas_height() - hh)
+        #hw, hh = self.image.w // 2, self.image.h // 2
+        x = clamp(self.hx / 2, x, get_canvas_width() - self.hx / 2)
+        y = clamp(self.hy / 2, y, get_canvas_height() - self.hx / 2)
         self.pos = x, y
 
-    def get_pos(self):
-        return self.pos
+        global decrease, time
+        if decrease:
+            self.image.opacify(100)
+
+            if time + 1.5 < rt:
+                print(1)
+                decrease = False
+        else:
+            self.image.opacify(1)
+
+
+
 
     def increase_life(self):
-        global life
+        pass
 
 
-    def decrease_life(self):
-        global life
-        life -= 1
-        return life <= 0
+    def decrease_life(self, real_time):
+        global  decrease, time
+        self.life -= 1
+        time = real_time
+        decrease = True
+
+        return self.life <= 0
 
 
 
@@ -115,7 +132,7 @@ class Player:
 
         x, y = get_canvas_width() - 30, get_canvas_height() - 30
         for i in range(MAX_LIFE):
-            heart = heart_red if i < life else heart_white
+            heart = heart_red if i < self.life else heart_white
             heart.draw(x, y)
             x -= heart.w
 
@@ -154,13 +171,15 @@ class Player:
             elif e.key == SDLK_w:
                 self.delta_y -= 1
 
+
     def remove(self):
         gfw.world.remove(self)
+        return self.life
 
 
 class boss_mode_player(Player):
 
-    def __init__(self):
+    def __init__(self, exlife):
         global mouse_click
         mouse_click = False
         self.pos = get_canvas_width() // 2 , get_canvas_height() // 2
@@ -174,8 +193,8 @@ class boss_mode_player(Player):
         self.hx = 27*2
         self.hy = 20*2
 
-        global life
-        life = MAX_LIFE
+
+        self.life = exlife
 
         self.state = Player.FALLING
         self.FPS = 10
@@ -187,21 +206,38 @@ class boss_mode_player(Player):
         heart_white = gfw.image.load('res/heart_white.png')
         self.target_x, self.target_y = get_canvas_width() // 2, get_canvas_height() // 2
 
-        self.delta_x, self.delta_y = 0, 0
+        self.delta_x, self.delta_y = 0,0
 
         global pipe
         pipe = gfw.image.load('res/pipe_low.png')
         #delta_x, delta_y = 0, 0
+        global start_boss
+        start_boss = True
 
     def draw(self):
 
         global angle, mouse_click, pipe_size
-        pipe_size = 20
+
+
         x, y = self.pos
         dx, dy = self.target_x - x, self.target_y - y
         angle = math.atan2(dy, dx) - math.pi / 2
+
+        px, py = self.pos
+        plx, ply = self.pos
+
+
+        plx, ply = self.target_x - plx, self.target_y - ply
+
+        #print(pipe_pos)
+
+        pipe_size = math.sqrt(plx ** 2 + ply ** 2)
+        px += (self.target_x - px) // 2
+        py += (self.target_y - py) // 2
+        pipe_pos = px, py
+
         if mouse_click:
-            pipe.composite_draw(angle, 'h', *self.pos, pipe_size, pipe_size*7.5)
+            pipe.composite_draw(angle, 'h', *pipe_pos, 40, pipe_size)
 
 
         if angle > 0 or angle < -3.1:
@@ -213,7 +249,7 @@ class boss_mode_player(Player):
 
         x, y = get_canvas_width() - 30, get_canvas_height() - 30
         for i in range(MAX_LIFE):
-            heart = heart_red if i < life else heart_white
+            heart = heart_red if i < self.life else heart_white
             heart.draw(x, y)
             x -= heart.w
 
@@ -234,15 +270,22 @@ class boss_mode_player(Player):
         # print(y)
 
         self.time += gfw.delta_time
-        if self.state != Player.FALLING:
-            # print('jump speed:', self.jump_speed)
-            self.move((0, self.jump_speed * gfw.delta_time))
-            self.jump_speed -= Player.GRAVITY * gfw.delta_time
 
-        hw, hh = self.image.w // 2, self.image.h // 2
-        x = clamp(hw, x, get_canvas_width() - hw)
-        y = clamp(hh, y, get_canvas_height() - hh)
+
+        #hw, hh = self.image.w // 2, self.image.h // 2
+        x = clamp(self.hx/2, x, get_canvas_width() - self.hx/2)
+        y = clamp(self.hy/2, y, get_canvas_height() - self.hx/2)
         self.pos = x, y
+
+        # global decrease, time
+        # if decrease:
+        #     self.image.opacify(100)
+        #
+        #     if time + 1.5 < rt:
+        #         print(1)
+        #         decrease = False
+        # else:
+        #     self.image.opacify(1)
 
 
 
@@ -281,7 +324,9 @@ class boss_mode_player(Player):
 
     def handle_event(self, e):
         #global delta_x, delta_y
-        global mouse_click
+
+
+        global mouse_click, start_boss
         if e.type == SDL_MOUSEBUTTONDOWN:
             mouse_click = True
             self.set_target(e)
@@ -294,27 +339,35 @@ class boss_mode_player(Player):
             self.set_target(e)
             self.teleport()
 
+        if start_boss and e.type == SDL_KEYDOWN and e.key == SDLK_RETURN:
+            self.delta_x = 0
+            self.delta_Y = 0
 
-        if e.type == SDL_KEYDOWN:
+            start_boss = False
 
-            if e.key == SDLK_a:
-                self.delta_x -= 1
-            elif e.key == SDLK_d:
-                self.delta_x += 1
-            elif e.key == SDLK_s:
-                self.delta_y -= 1
-            elif e.key == SDLK_w:
-                self.delta_y += 1
 
-        elif e.type == SDL_KEYUP:
-            if e.key == SDLK_a:
-                self.delta_x += 1
-            elif e.key == SDLK_d:
-                self.delta_x -= 1
-            elif e.key == SDLK_s:
-                self.delta_y += 1
-            elif e.key == SDLK_w:
-                self.delta_y -= 1
+        else:
+
+            if e.type == SDL_KEYDOWN:
+
+                if e.key == SDLK_a:
+                    self.delta_x -= 1
+                elif e.key == SDLK_d:
+                    self.delta_x += 1
+                elif e.key == SDLK_s:
+                    self.delta_y -= 1
+                elif e.key == SDLK_w:
+                    self.delta_y += 1
+
+            elif e.type == SDL_KEYUP:
+                if e.key == SDLK_a:
+                    self.delta_x += 1
+                elif e.key == SDLK_d:
+                    self.delta_x -= 1
+                elif e.key == SDLK_s:
+                    self.delta_y += 1
+                elif e.key == SDLK_w:
+                    self.delta_y -= 1
 
     def set_target(self, e):
         #global target_x, target_y
