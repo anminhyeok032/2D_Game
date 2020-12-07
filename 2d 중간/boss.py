@@ -2,9 +2,10 @@ from pico2d import *
 import gfw
 import gobj
 from player import Player
+import life_gauge
 
 class Boss:
-    def __init__(self, c_pos_x, c_pos_y):
+    def __init__(self):
         global angle
         angle = 0
         self.pos = get_canvas_width() // 2, get_canvas_height() // 2
@@ -14,15 +15,25 @@ class Boss:
         self.time = 0
         self.move = 0
         self.jump_speed = 0
-        global c_pos
-        c_pos = c_pos_x, c_pos_y
+
+        self.max_life = 100
+        self.life = self.max_life
+
+
+        self.c_pos = 0, 0
         self.hx = 150
         self.hy = 150
+        self.moving = False
+
+
+    def set_click(self, c_pos_x, c_pos_y):
+        self.c_pos = c_pos_x, c_pos_y
+
 
 
     def draw(self):
-        global angle, c_pos
-        target_x, target_y = c_pos
+        global angle
+        target_x, target_y = self.c_pos
         x, y = self.pos
         dx, dy = target_x - x, target_y - y
 
@@ -44,17 +55,37 @@ class Boss:
         else:
             self.image.composite_draw(angle, 'v', *self.pos, 200, 200)
 
+        rate = self.life / self.max_life
+        life_gauge.draw(get_canvas_width() // 2, get_canvas_height() - 100, get_canvas_width() - 100, rate)
+        #print(self.life)
 
 
 
 
 
+    def decrease_life(self, amount):
+        self.life -= amount
+        return self.life <= 0
 
     def update(self):
+
         x, y = self.pos
+        if self.life < 50:
+
+            if x < 75 :
+                self.moving = True
+            if self.moving:
+                x += 2
+                if x > 725:
+                    self.moving = False
+            else:
+                x -= 2
+
         self.pos = x, y
         if x < - 100:
             self.remove()
+
+
 
     def get_bb(self):
         hw = self.hx

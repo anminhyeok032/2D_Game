@@ -181,7 +181,7 @@ class Player:
 
 
 class boss_mode_player(Player):
-    global time, op
+    global time, op, st
 
     def __init__(self, exlife):
         global mouse_click
@@ -220,8 +220,11 @@ class boss_mode_player(Player):
         global pipe
         pipe = gfw.image.load('res/pipe_low.png')
         #delta_x, delta_y = 0, 0
-        global start_boss
+        global start_boss, st
+        st = 0
+        self.cooltime = True
         start_boss = True
+        self.space = False
 
     def draw(self):
 
@@ -298,6 +301,15 @@ class boss_mode_player(Player):
             op = 1
             self.image.opacify(op)
 
+        global st
+        if not self.cooltime:
+            if st + 0.02 < rt:
+                self.cooltime = True
+                self.space = False
+
+            else:
+                self.cooltime = False
+
 
     def increase_life(self):
         pass
@@ -351,13 +363,23 @@ class boss_mode_player(Player):
         #global delta_x, delta_y
 
 
-        global mouse_click, start_boss
+        global mouse_click, start_boss, st, rt
         if e.type == SDL_MOUSEBUTTONDOWN:
             mouse_click = True
-            self.set_target(e)
-
         elif e.type == SDL_MOUSEMOTION:
             self.set_target(e)
+
+
+        if mouse_click and e.type == SDL_KEYDOWN and self.cooltime:
+            if e.key == SDLK_SPACE:
+                st = rt
+                self.cooltime = False
+                self.space = True
+                #self.set_target(e)
+        if mouse_click and e.type == SDL_KEYUP:
+            if e.key == SDLK_SPACE:
+                #cooltime = True
+                self.space = False
 
         if e.type == SDL_MOUSEBUTTONUP:
             mouse_click = False
@@ -394,6 +416,12 @@ class boss_mode_player(Player):
                 elif e.key == SDLK_w:
                     self.delta_y -= 1
 
+
+
+
+
     def set_target(self, e):
         #global target_x, target_y
         self.target_x, self.target_y = e.x, get_canvas_height() - e.y - 1
+
+

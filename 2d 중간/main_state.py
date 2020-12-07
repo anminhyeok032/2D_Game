@@ -2,10 +2,12 @@ from pico2d import *
 import gobj
 from player import Player, boss_mode_player
 from boss import Boss
-from collision import *
+from shell import Shell_red_boss, Shell_green_boss
 from bg import HorzScrollBackground
 import gfw
 import generator
+import life_gauge
+
 
 STATE_IN_GAME, STATE_BOSS = range(2)
 
@@ -26,7 +28,7 @@ def enter():
     global time
     time = 0
     global score
-    score = 10
+    score = 0
 
 
     global player,boss
@@ -60,7 +62,11 @@ def check_enemy(e):
         if not boss_bool:
             e.remove()
         return True
-
+    return False
+def check_boss(e):
+    if gobj.collides_box(boss, e):
+        e.remove()
+        return True
     return False
 
     # for b in gfw.gfw.world.objects_at(gfw.layer.bullet):
@@ -87,7 +93,8 @@ def update():
         generator.update(time)
 
     global boss
-    boss = Boss(*player.pos)
+
+    boss_dead = False
     hit, hits, dead, item = False, False, False, None
     if not boss_bool:
 
@@ -113,13 +120,43 @@ def update():
 
 
     else:
+        boss.set_click(*player.pos)
         for e in gfw.world.objects_at(gfw.layer.boss):
             hits = check_enemy(e)
             if hits:
                 dead = player.decrease_life(time)
+
+        if player.space and not player.cooltime:
+            global shell
+            shell = Shell_red_boss(10, *player.pos, player.target_x, player.target_y)
+            shell.shell = shell
+            gfw.world.add(gfw.layer.shell_red, shell)
+
+        global shell1
+        shell1 = Shell_green_boss(5, *boss.pos, *player.pos)
+        shell1.shell = shell1
+        gfw.world.add(gfw.layer.shell_green, shell1)
+
+        for e in gfw.world.objects_at(gfw.layer.shell_red):
+            hit = check_boss(e)
+            if hit:
+                boss_dead = boss.decrease_life(2)
+            item = check_enemy(e)
+            if item:
+                score += 1
+
+
+        for e in gfw.world.objects_at(gfw.layer.shell_green):
+            hits = check_enemy(e)
+            if hits:
+                dead = player.decrease_life(time)
+
+
     ends = dead
     if ends:
         print('end')
+    if boss_dead:
+        print('boss dead')
 
 def draw():
     global boss_bool, bg
@@ -132,7 +169,7 @@ def draw():
     score_pos = get_canvas_width() // 2, get_canvas_height() - 60
 
     font.draw(*score_pos, '%d' % score, (255, 255, 255))
-    gobj.draw_collision_box()
+    #gobj.draw_collision_box()
 
         #gfw.world.add(gfw.layer.bg, bg)
 
@@ -151,12 +188,12 @@ def boss_round():
 
 
     state = STATE_BOSS
-
+    life_gauge.load()
 
     player = boss_mode_player(exlife)
     gfw.world.add(gfw.layer.player, player)
 
-
+    boss = Boss()
     gfw.world.add(gfw.layer.boss, boss)
 
 
