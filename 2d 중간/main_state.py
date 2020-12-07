@@ -45,9 +45,6 @@ def start_game():
     gfw.world.remove(highscore)
 
 
-
-    gfw.world.remove(highscore)
-
     global score
     score = 9
     global time
@@ -88,12 +85,14 @@ def enter():
     global game_over_image
     game_over_image = gfw.image.load('res/game_over_0.png')
 
-    global music_bg, wav_item, wav_hit
+    global music_bg, wav_item, wav_hit, wav_boss
     music_bg = load_music('res/boss_music.mp3')
     wav_item = load_wav('res/point.wav')
     wav_hit = load_wav('res/hit.wav')
+    wav_boss = load_wav('res/swoosh.wav')
     wav_item.set_volume(10)
     wav_hit.set_volume(5)
+    wav_boss.set_volume(5)
 
     global time
     time = 0
@@ -118,10 +117,11 @@ def enter():
 
 
 def exit():
-    global music_bg, wav_item, wav_hit
+    global music_bg, wav_item, wav_hit, wav_boss
     del music_bg
     del wav_item
     del wav_hit
+    del wav_boss
 
 
 
@@ -132,26 +132,12 @@ def check_enemy(e):
             e.remove()
         return True
     return False
+
 def check_boss(e):
     if gobj.collides_box(boss, e):
         e.remove()
         return True
     return False
-
-    # for b in gfw.gfw.world.objects_at(gfw.layer.bullet):
-    #     if gobj.collides_box(b, e):
-    #         # print('Collision', e, b)
-    #         dead = e.decrease_life(b.power)
-    #         if dead:
-    #             score.score += e.level * 10
-    #             e.remove()
-    #         b.remove()
-    #         return
-
-
-
-
-
 
 
 def update():
@@ -214,10 +200,12 @@ def update():
             shell1.shell = shell1
             gfw.world.add(gfw.layer.shell_green, shell1)
 
+
             for e in gfw.world.objects_at(gfw.layer.shell_red):
                 hit = check_boss(e)
                 if hit:
-                    boss_dead = boss.decrease_life(2)
+                    boss_dead = boss.decrease_life(5)
+                    wav_boss.play()
                 item = check_enemy(e)
                 if item:
                     wav_item.play()
@@ -272,8 +260,8 @@ def boss_round():
     global player, boss, state, bg
     if state == STATE_GAME_OVER:
         return
-    print(1)
     bg.remove()
+    delta = player.get_delta()
     exlife = player.remove()
     for e in gfw.world.objects_at(gfw.layer.shell_green):
         e.remove()
@@ -286,7 +274,7 @@ def boss_round():
     state = STATE_BOSS
     life_gauge.load()
 
-    player = boss_mode_player(exlife)
+    player = boss_mode_player(exlife, *delta)
     gfw.world.add(gfw.layer.player, player)
 
     boss = Boss()
@@ -301,12 +289,12 @@ def handle_event(e):
         gfw.quit()
     elif e.type == SDL_KEYDOWN:
         if e.key == SDLK_ESCAPE:
-            gfw.pop()
+            gfw.quit()
         elif e.key == SDLK_RETURN:
             start_game()
 
     player.handle_event(e)
 
 
-if __name__ == '__main__':
-    gfw.run_main()
+# if __name__ == '__main__':
+#     gfw.run_main()

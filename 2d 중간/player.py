@@ -39,10 +39,10 @@ class Player:
         self.delta_x, self.delta_y = 0, 0
         #delta_x, delta_y = 0, 0
 
-        global decrease, rt, op
+        global decrease, op
         op = 1
         decrease = False
-        rt = 0
+        self.rt = 0
         global heart_red, heart_white
         heart_red = gfw.image.load('res/heart_red.png')
         heart_white = gfw.image.load('res/heart_white.png')
@@ -67,11 +67,11 @@ class Player:
 
     def update(self):
 
-        global fn, rt
+        global fn
         fn += 1
         self.frame = ((self.frame + fn) // 10) % 3
 
-        rt += gfw.delta_time
+        self.rt += gfw.delta_time
 
         # global delta_x, delta_y
         x, y = self.pos
@@ -98,7 +98,7 @@ class Player:
             op = 100
             self.image.opacify(op)
 
-            if time + 1.5 < rt:
+            if time + 1.5 < self.rt:
                 decrease = False
         else:
             op = 1
@@ -171,7 +171,8 @@ class Player:
             elif e.key == SDLK_w:
                 self.delta_y -= 1
 
-
+    def get_delta(self):
+        return self.delta_x, self.delta_y
     def remove(self):
         gfw.world.remove(self)
         return self.life
@@ -180,7 +181,7 @@ class Player:
 class boss_mode_player(Player):
     global time, op, st
 
-    def __init__(self, exlife):
+    def __init__(self, exlife, del_x, del_y):
         global mouse_click
         mouse_click = False
         self.pos = get_canvas_width() // 2 , 100
@@ -212,7 +213,7 @@ class boss_mode_player(Player):
         heart_white = gfw.image.load('res/heart_white.png')
         self.target_x, self.target_y = get_canvas_width() // 2, get_canvas_height() // 2
 
-        self.delta_x, self.delta_y = 0,0
+        self.delta_x, self.delta_y = del_x, del_y
 
         global pipe
         pipe = gfw.image.load('res/pipe_low.png')
@@ -288,11 +289,13 @@ class boss_mode_player(Player):
         self.pos = x, y
 
         global decrease, time, op
+
         if decrease:
             op = 100
             self.image.opacify(op)
 
-            if time + 1.5 < rt:
+            if time + 1.5 < rt + (time-rt/2):
+
                 decrease = False
         else:
             op = 1
@@ -313,7 +316,7 @@ class boss_mode_player(Player):
 
 
     def decrease_life(self, real_time):
-        global decrease, time
+        global decrease, time, rt
         if op == 1:
             self.life -= 1
         time = real_time
