@@ -139,4 +139,4 @@
   
   2차발표 링크 - https://youtu.be/rEzOJciKe3g
   
-  3차발표 링크 -
+  3차발표 링크 - https://youtu.be/AW6YzvyPG0w
