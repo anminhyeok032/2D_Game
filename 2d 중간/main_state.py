@@ -46,7 +46,7 @@ def start_game():
 
 
     global score
-    score = 9
+    score = 0
     global time
     time = 0
 
