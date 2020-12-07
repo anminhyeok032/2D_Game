@@ -7,23 +7,93 @@ from bg import HorzScrollBackground
 import gfw
 import generator
 import life_gauge
+import highscore
 
 
-STATE_IN_GAME, STATE_BOSS = range(2)
+STATE_IN_GAME, STATE_BOSS, STATE_GAME_OVER = range(3)
 
-def enter():
-    global state, boss_bool
+
+def start_game():
+    global state
+    if state != STATE_GAME_OVER:
+        return
     state = STATE_IN_GAME
-    boss_bool = False
-    gfw.world.init(['bg', 'shell_green', 'shell_red', 'pipe', 'enemy', 'item', 'boss', 'player'])
+    global player, boss, bg
+    player.reset()
 
-    global bg
     bg = HorzScrollBackground('background.png')
     bg.speed = 10
     gfw.world.add(gfw.layer.bg, bg)
+    gfw.world.clear_at(gfw.layer.player)
+    player = Player()
+    gfw.world.add(gfw.layer.player, player)
+    #player = Player()
+    #boss.reset()
+    #boss = Boss()
+
+    # for e in gfw.world.objects_at(gfw.layer.shell_green):
+    #     e.remove()
+    # for e in gfw.world.objects_at(gfw.layer.pipe):
+    #     e.remove()
+    # for e in gfw.world.objects_at(gfw.layer.shell_red):
+    #     e.remove()
+    gfw.world.clear_at(gfw.layer.shell_red)
+    gfw.world.clear_at(gfw.layer.shell_green)
+    gfw.world.clear_at(gfw.layer.boss)
+
+
+    gfw.world.remove(highscore)
+
+
+
+    gfw.world.remove(highscore)
+
+    global score
+    score = 9
+    global time
+    time = 0
+
+    global boss_bool
+    boss_bool = False
+
+
+    music_bg.repeat_play()
+
+def end_game():
+    global state, score
+    print('Dead')
+    state = STATE_GAME_OVER
+    music_bg.stop()
+
+    highscore.add(score)
+    gfw.world.add(gfw.layer.ui, highscore)
+
+
+
+
+
+def enter():
+    global boss_bool
+    boss_bool = False
+    gfw.world.init(['bg', 'shell_green', 'shell_red', 'pipe', 'enemy', 'item', 'boss', 'player', 'ui'])
+
+    # global bg
+    # bg = HorzScrollBackground('background.png')
+    # bg.speed = 10
+    # gfw.world.add(gfw.layer.bg, bg)
 
     global font
     font = gfw.font.load('res/FlappyBird.ttf', 40)
+
+    global game_over_image
+    game_over_image = gfw.image.load('res/game_over_0.png')
+
+    global music_bg, wav_item, wav_hit
+    music_bg = load_music('res/boss_music.mp3')
+    wav_item = load_wav('res/point.wav')
+    wav_hit = load_wav('res/hit.wav')
+    wav_item.set_volume(10)
+    wav_hit.set_volume(5)
 
     global time
     time = 0
@@ -31,28 +101,27 @@ def enter():
     score = 0
 
 
-    global player,boss
+    global boss, player
 
     player = Player()
-    #player.bg = bg
-    gfw.world.add(gfw.layer.player, player)
-
-
-    # player = boss_mode_player()
-    # player.bg = bg
     # gfw.world.add(gfw.layer.player, player)
-    #
-    # boss = Boss(player.pos)
-    # boss.bg = bg
-    # gfw.world.add(gfw.layer.boss, boss)
 
+    highscore.load()
+
+    global state
+    state = STATE_GAME_OVER
+
+    start_game()
 
 
 
 
 
 def exit():
-    pass
+    global music_bg, wav_item, wav_hit
+    del music_bg
+    del wav_item
+    del wav_hit
 
 
 
@@ -101,16 +170,19 @@ def update():
         for e in gfw.world.objects_at(gfw.layer.shell_green):
             hit = check_enemy(e)
             if hit:
+                wav_hit.play()
                 dead = player.decrease_life(time)
 
         for e in gfw.world.objects_at(gfw.layer.pipe):
             hits = check_enemy(e)
             if hits:
+                wav_hit.play()
                 dead = player.decrease_life(time)
 
         for e in gfw.world.objects_at(gfw.layer.shell_red):
             item = check_enemy(e)
             if item:
+                wav_item.play()
                 player.increase_life()
                 score += 1
 
@@ -120,43 +192,60 @@ def update():
 
 
     else:
-        boss.set_click(*player.pos)
-        for e in gfw.world.objects_at(gfw.layer.boss):
-            hits = check_enemy(e)
-            if hits:
-                dead = player.decrease_life(time)
+        if state == STATE_BOSS:
+            boss.set_click(*player.pos)
+            for e in gfw.world.objects_at(gfw.layer.boss):
+                hits = check_enemy(e)
+                if hits:
+                    wav_hit.play()
+                    dead = player.decrease_life(time)
 
-        if player.space and not player.cooltime:
-            global shell
-            shell = Shell_red_boss(10, *player.pos, player.target_x, player.target_y)
-            shell.shell = shell
-            gfw.world.add(gfw.layer.shell_red, shell)
+            if player.space and not player.cooltime:
+                global shell
+                shell = Shell_red_boss(10, *player.pos, player.target_x, player.target_y)
+                shell.shell = shell
+                gfw.world.add(gfw.layer.shell_red, shell)
+                if score < 2:
+                    end_game()
+                score -= 2
 
-        global shell1
-        shell1 = Shell_green_boss(5, *boss.pos, *player.pos)
-        shell1.shell = shell1
-        gfw.world.add(gfw.layer.shell_green, shell1)
+            global shell1
+            shell1 = Shell_green_boss(5, *boss.pos, *player.pos)
+            shell1.shell = shell1
+            gfw.world.add(gfw.layer.shell_green, shell1)
 
-        for e in gfw.world.objects_at(gfw.layer.shell_red):
-            hit = check_boss(e)
-            if hit:
-                boss_dead = boss.decrease_life(2)
-            item = check_enemy(e)
-            if item:
-                score += 1
+            for e in gfw.world.objects_at(gfw.layer.shell_red):
+                hit = check_boss(e)
+                if hit:
+                    boss_dead = boss.decrease_life(2)
+                item = check_enemy(e)
+                if item:
+                    wav_item.play()
+                    score += 1
 
+            for e in gfw.world.objects_at(gfw.layer.shell_green):
+                hits = check_enemy(e)
+                if hits:
+                    wav_hit.play()
+                    dead = player.decrease_life(time)
 
-        for e in gfw.world.objects_at(gfw.layer.shell_green):
-            hits = check_enemy(e)
-            if hits:
-                dead = player.decrease_life(time)
-
-
+    global ends
     ends = dead
+
     if ends:
+        state = STATE_GAME_OVER
+        end_game()
         print('end')
     if boss_dead:
+        end_game()
         print('boss dead')
+
+
+
+
+
+
+
 
 def draw():
     global boss_bool, bg
@@ -169,6 +258,10 @@ def draw():
     score_pos = get_canvas_width() // 2, get_canvas_height() - 60
 
     font.draw(*score_pos, '%d' % score, (255, 255, 255))
+
+    if state == STATE_GAME_OVER:
+        center = get_canvas_width() // 2, get_canvas_height() // 2
+        game_over_image.draw(*center)
     #gobj.draw_collision_box()
 
         #gfw.world.add(gfw.layer.bg, bg)
@@ -177,6 +270,9 @@ def draw():
 def boss_round():
 
     global player, boss, state, bg
+    if state == STATE_GAME_OVER:
+        return
+    print(1)
     bg.remove()
     exlife = player.remove()
     for e in gfw.world.objects_at(gfw.layer.shell_green):
@@ -198,6 +294,8 @@ def boss_round():
 
 
 
+
+
 def handle_event(e):
     if e.type == SDL_QUIT:
         gfw.quit()
@@ -205,7 +303,7 @@ def handle_event(e):
         if e.key == SDLK_ESCAPE:
             gfw.pop()
         elif e.key == SDLK_RETURN:
-            pass
+            start_game()
 
     player.handle_event(e)
 

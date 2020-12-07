@@ -58,15 +58,12 @@ class Player:
 
 
     def reset(self):
-
         self.pos = get_canvas_width() // 2, get_canvas_height() // 2
-
-
         global angle
         angle = 0
-
-
         self.life = MAX_LIFE
+        self.delta_x, self.delta_y = 0, 0
+
 
     def update(self):
 

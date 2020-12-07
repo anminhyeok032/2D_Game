@@ -25,6 +25,13 @@ class Boss:
         self.hy = 150
         self.moving = False
 
+    def reset(self):
+        self.pos = get_canvas_width() // 2, get_canvas_height() // 2
+        global angle
+        angle = 0
+        self.life = self.max_life
+        self.c_pos = 0, 0
+
 
     def set_click(self, c_pos_x, c_pos_y):
         self.c_pos = c_pos_x, c_pos_y
