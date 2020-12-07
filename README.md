@@ -32,9 +32,9 @@
     -아무키가 아닌 spacebar 를 누르면 시작하도록 설정
     -화면에 bird객체가 움직이며 화면이 자연스럽게 스크롤 되도록 설정    구현률 100
     
-    ![title_screen_shoot](https://user-images.githubusercontent.com/68374446/101348193-9938ff80-38ce-11eb-845e-52102294e1f2.PNG)
+![title_screen_shoot](https://user-images.githubusercontent.com/68374446/101348193-9938ff80-38ce-11eb-845e-52102294e1f2.PNG)
     
-    타이틀 
+   타이틀 화면
     
     
 
@@ -78,7 +78,9 @@
       -체력 모두 소진 혹은 score가 0이 되면 GameOver 즉 score = 탄환의 갯수
       -보스전에서 score가 모두 소진되지 않게 탄환을 쏘고 순간이동을 통해 자신이 쏜 탄환에 부딪쳐 점수를 다시 획득해야됨(자신이 쏜 탄환은 부딪쳐도 사라지지 않음)
       
-      ![boss_screen_shot](https://user-images.githubusercontent.com/68374446/101348259-b2da4700-38ce-11eb-80c3-59a5185f241b.PNG)
+
+
+![boss_screen_shot](https://user-images.githubusercontent.com/68374446/101348259-b2da4700-38ce-11eb-80c3-59a5185f241b.PNG)
       
       게임의 보스전과 플레이어가 공격하는 모습
       
@@ -122,12 +124,14 @@
   기존 일정
   
   
-  ![commit](https://user-images.githubusercontent.com/68374446/101347270-2a0edb80-38cd-11eb-91e9-979d6afd9f57.PNG)
+![commit](https://user-images.githubusercontent.com/68374446/101347270-2a0edb80-38cd-11eb-91e9-979d6afd9f57.PNG)
   변경된 커밋 일정
   
   
   
   
   1차발표 링크 - https://www.youtube.com/watch?v=B6PeV2sMLm8&feature=youtu.be
+  
   2차발표 링크 - https://youtu.be/rEzOJciKe3g
+  
   3차발표 링크 -
